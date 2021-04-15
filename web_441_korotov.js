@@ -4,10 +4,9 @@ class Storage {
         this._map = new Map()
     }
 
-    add(value) {
-        let id = this.generateUId();
-        this._map.set(id, value);
-        return id;
+    add(tid, value) {
+        this._map.set(tid, value);
+        return tid;
     }
 
     getById(id) {
@@ -46,27 +45,27 @@ class Storage {
         return false;
     }
 
-    validate(oldValue, value) {
-        if (oldValue === value) {
+    validate(val, value) {
+        if (val === value) {
             return true;
         }
 
-        if (!(oldValue instanceof Object) || !(value instanceof Object)) {
+        if (!(val instanceof Object) || !(value instanceof Object)) {
             return false;
         }
 
-        if (oldValue.constructor !== value.constructor) {
+        if (val.constructor !== value.constructor) {
             return false;
         }
 
-        for (const field in oldValue) {
+        for (const field in val) {
             if (!value.hasOwnProperty(field)) {
                 return false;
             }
         }
 
         for (const field in value) {
-            if (value.hasOwnProperty(field) && !oldValue.hasOwnProperty(field)) {
+            if (value.hasOwnProperty(field) && !val.hasOwnProperty(field)) {
                 return false;
             }
         }
@@ -74,22 +73,6 @@ class Storage {
         return true;
     }
 
-    generateUId() {
-        while(true) {
-            let id = this.uuidv4();
-            if (!this._map.has(id)) {
-                return id;
-            }
-        }
-    }
-
-
-    uuidv4() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }
 }
 const storage = new Storage();
 
@@ -108,48 +91,38 @@ class ValueType2 {
     }
 }
 
-let id1 = storage.add(String("stringElem1"));
-let id2 = storage.add(new ValueType1("SecondVal1", "SecondVal2"));
-let id3 = storage.add(new ValueType1("ThirdVal1", "ThirdVal2"));
-let id4 = storage.add(new ValueType2("FourthVal1", "FourthVal2", "FourthVal3"));
-let id5 = storage.add(new ValueType2("FifthVal1", "FifthVal2", "FifthVal3"));
+let id1 = storage.add("Oleg", String("Korotov"));
+let id2 = storage.add("Ne oleg", new ValueType1("Ne Korotov", "Ne like bananas"));
+let id3 = storage.add("Toje ne Oleg", new ValueType1("Toje ne Korotov", "Toje doesn't like bananas"));
+let id4 = storage.add("I eto ne oleg",new ValueType2("I ne Korotov", "I doesn't like bananas",
+                    "but like grapes"));
+let id5 = storage.add("A eto voobshche ne Oleg",new ValueType2("voobshche ne Korotov",
+                    "I voobshche doesn't like bananas", "but voobshche to like grapes"));
 
-console.log("Get element by id")
+console.log("Получение по id ")
 let elementById = storage.getById(id1);
 console.log("Item: { id:" + id1 + ", value: " + JSON.stringify(elementById) + "}")
-
 let elementById2 = storage.getById(id2);
 console.log("Item: { id:" + id2 + ", value: " + JSON.stringify(elementById2) + "}")
-
 let elementById3 = storage.getById(id3);
 console.log("Item: { id:" + id3 + ", value: " + JSON.stringify(elementById3) + "}") //без JSON.stringify возвращает типы эл-ов
-
-
 elementById4 = storage.getById(id4);
 console.log("Item: { id:" + id4 + ", value: " + JSON.stringify(elementById4) + "}")
 
-console.log("Delete element by id: ")
-console.log("All elements: ", storage.getAll())
-let deleteById = storage.deleteById(id3);
-console.log(deleteById)
-console.log("All elements: ", storage.getAll())
-storage.getById(id3) // error
-deleteById = storage.deleteById(id3);
-console.log(deleteById)
-console.log("All elements: ", storage.getAll())
 
-console.log("Replace by id: ")
-let replaceById = storage.replaceById(id3, String("ERROR"))
-console.log(replaceById)
-replaceById = storage.replaceById(id5, String("SUCCESS"));
-console.log(replaceById)
-console.log("All elements: ", storage.getAll())
+console.log("Удаление по id ")
+console.log("Все элементыты: ", storage.getAll())
+storage.deleteById(id3);
+console.log("Все элементыты: без 3-го ", storage.getAll())
+storage.deleteById(id3);
+console.log("Все элементыты: ", storage.getAll())
 
-console.log("Update by id: ")
-let updateById = storage.updateById(id2, new ValueType2("field1", "field2", "field3"));
-console.log(updateById)
-updateById = storage.updateById(id3, new ValueType1("newField1!", "newField2!"));
-console.log(updateById)
-updateById = storage.updateById(id2, new ValueType1("newField1", "newField2"));
-console.log(updateById)
-console.log("All elements: ", storage.getAll())
+console.log("Замена по id ")
+storage.replaceById(id5, String("A mojet i Korotov"));
+console.log("Все элементыты: ", storage.getAll())
+
+console.log("Обновление по id ")
+storage.updateById(id2, new ValueType2("field1", "field2", "field3"));
+storage.updateById(id3, new ValueType1("newField1!", "newField2!"));
+storage.updateById(id2, new ValueType1("newField1", "newField2"));
+console.log("Все элементыты: ", storage.getAll())
